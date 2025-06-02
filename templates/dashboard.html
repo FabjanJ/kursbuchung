@@ -122,6 +122,9 @@
     </style>
 </head>
 <body>
+    <div style="text-align:center; font-size:1.2em; margin-bottom:10px;">
+        Hallo {{ session['username'] }}
+    </div>
     <h2 style="display: inline-block;">Wochenansicht</h2>
     <div class="filter">
         <form method="get" id="kursForm">
@@ -227,7 +230,7 @@
     <button id="buchenBtn">Buchen</button>
     <h3>Meine Buchungen</h3>
     <ul>
-        {% for b in eigene_buchungen %}
+        {% for b in eigene_buchungen if b.datum >= start.today() %}
             <li>{{ b.titel }} am {{ b.datum.strftime('%d.%m.%Y') }} um {{ '%02d:00–%02d:00'|format(b.stunde, b.stunde+1) }}</li>
         {% else %}
             <li>Keine Buchungen</li>
