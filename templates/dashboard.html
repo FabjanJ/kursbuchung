@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+            min-width: 100px;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        td.slot:hover {
+            cursor: pointer;
+            background-color: #e6e6e6;
+        }
+
+        td.slot.selected {
+            background-color: #cccccc;
+        }
+
+        .kurs {
+            background-color: #dff0d8;
+            border: 1px solid #a1d99b;
+            padding: 3px;
+            margin-top: 5px;
+            font-size: 0.9em;
+            border-radius: 4px;
+            color: #222;
+        }
+        .kurs.ausgebucht {
+            background-color: #f8d7da !important;
+            border: 2px solid #c00 !important;
+            color: #c00 !important;
+        }
+
+        a {
+            margin: 10px;
+        }
+
+        .filter {
+            float: right;
+            margin-bottom: 10px;
+        }
+
+        .filter select {
+            padding: 5px;
+        }
+
+        .belegt {
+            background-color: #f8d7da; /* rot für belegt */
+            pointer-events: none;
+        }
+
+        .kurskopf {
+            background: #fff !important;
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .weekend {
+            background: #f2f2f2 !important;
+            pointer-events: none;
+            cursor: default;
+        }
+
+        /* Neu hinzugefügt für Logout-Button */
+        #logoutBtn {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #logoutBtn:hover {
+            background-color: #0056b3;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: auto;
+            background: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 350px;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="display: inline-block;">Wochenansicht</h2>
+    <div class="filter">
+        <form method="get" id="kursForm">
+            <label for="kursFilter">Kurs wählen:</label>
+            <select id="kursFilter" name="kurs" onchange="document.getElementById('kursForm').submit()">
+                {% for titel in kurstitel %}
+                    <option value="{{ titel }}" {% if titel == gewaehlter_kurs %}selected{% endif %}>{{ titel }}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="woche" value="{{ delta }}">
+        </form>
+    </div>
+    <div style="clear: both;"></div>
+
+    <div>
+        <a href="{{ url_for('dashboard', woche=delta - 1) }}">← Vorige Woche</a> |
+        <a href="{{ url_for('dashboard', woche=delta + 1) }}">Nächste Woche →</a>
+    </div>
+
+    <br>
+    <table>
+        <thead>
+            <tr>
+                <th>Uhrzeit</th>
+                {% set wochentage = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'] %}
+                {% for i in range(7) %}
+                    <th class="{% if i >= 5 %}weekend{% endif %}">{{ wochentage[i] }} {{ (start + timedelta(days=i)).strftime('%d.%m') }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td></td>
+                {% for i in range(7) %}
+                {% set tag = (start + timedelta(days=i)).strftime('%Y-%m-%d') %}
+                {% set kurs_anzeige = False %}
+                {% if kurs and kurs.von_datum and kurs.bis_datum %}
+                    {% if kurs.von_datum.strftime('%Y-%m-%d') <= tag <= kurs.bis_datum.strftime('%Y-%m-%d') and i < 5 %}
+                        {% set kurs_anzeige = True %}
+                    {% endif %}
+                {% endif %}
+                {% set teilnehmer_count = 0 %}
+                {% if max_teilnehmer and kurs %}
+                    {% set benutzer_ids = [] %}
+                    {% for b in buchungen %}
+                        {% if b.datum.strftime('%Y-%m-%d') == tag and b.kurs_id == kurs.id %}
+                            {% if b.benutzer_id not in benutzer_ids %}
+                                {% set benutzer_ids = benutzer_ids + [b.benutzer_id] %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    {% set teilnehmer_count = benutzer_ids|length %}
+                {% endif %}
+                {% set verfuegbar = max_teilnehmer - teilnehmer_count if max_teilnehmer else None %}
+                <td class="slot kurskopf{% if i >= 5 %} weekend{% endif %}{% if max_teilnehmer and verfuegbar == 0 %} ausgebucht{% endif %}" style="vertical-align:top; background:{% if max_teilnehmer and verfuegbar == 0 %}#f8d7da{% elif i >= 5 %}#f2f2f2{% else %}#fff{% endif %};">
+                    {% if kurs_anzeige and i < 5 %}
+                        <div class="kurs{% if max_teilnehmer and verfuegbar == 0 %} ausgebucht{% endif %}" data-titel="{{ gewaehlter_kurs }}" data-beschreibung="{{ kurs.beschreibung|e }}" data-verfuegbar="{{ (verfuegbar if verfuegbar is not none and verfuegbar > 0 else 0) }}">
+                            <strong>{{ gewaehlter_kurs }}</strong><br>
+                            {% if max_teilnehmer %}
+                                <span style="font-size:0.8em;">{{ teilnehmer_count }}/{{ max_teilnehmer }} belegt</span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% for stunde in range(8, 17) %}
+                <tr>
+                    <td>{{ "%02d:00–%02d:00"|format(stunde, stunde+1) }}</td>
+                    {% for i in range(7) %}
+                        {% set tag = (start + timedelta(days=i)).strftime('%Y-%m-%d') %}
+                        {% set slot_gebucht = false %}
+                        {% set slot_eigen = false %}
+                        {% if kurs %}
+                            {% for b in buchungen %}
+                                {% if b.datum.strftime('%Y-%m-%d') == tag and b.stunde == stunde and b.kurs_id == kurs.id %}
+                                    {% if b.benutzer_id == session['id'] %}
+                                        {% set slot_eigen = true %}
+                                    {% else %}
+                                        {% set slot_gebucht = true %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        {% if i >= 5 %}
+                            <td class="slot weekend" style="background:#f2f2f2;pointer-events:none;"></td>
+                        {% else %}
+                            <td class="slot{% if slot_gebucht %} belegt{% elif slot_eigen %} eigen{% endif %}" data-tag="{{ tag }}" data-stunde="{{ stunde }}" {% if slot_gebucht %}data-belegt="1"{% endif %}></td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <!-- Modal für Kursinfo -->
+    <div id="kursModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h3 id="modalTitel"></h3>
+            <p id="modalBeschreibung"></p>
+        </div>
+    </div>
+    <button id="buchenBtn">Buchen</button>
+    <h3>Meine Buchungen</h3>
+    <ul>
+        {% for b in eigene_buchungen %}
+            <li>{{ b.titel }} am {{ b.datum.strftime('%d.%m.%Y') }} um {{ '%02d:00–%02d:00'|format(b.stunde, b.stunde+1) }}</li>
+        {% else %}
+            <li>Keine Buchungen</li>
+        {% endfor %}
+    </ul>
+    <script>
+        // Slot auswählbar machen
+        document.querySelectorAll('.slot').forEach(slot => {
+            if (!slot.dataset.belegt) {
+                slot.addEventListener('click', () => {
+                    slot.classList.toggle('selected');
+                });
+            } else {
+                slot.style.backgroundColor = '#f8d7da'; // rot für belegt
+                slot.style.pointerEvents = 'none';
+            }
+        });
+        // Buchen Button
+        document.getElementById('buchenBtn').addEventListener('click', function () {
+            const selected = Array.from(document.querySelectorAll('.slot.selected'));
+            if (selected.length === 0) return alert('Bitte mindestens einen Slot auswählen!');
+            const slots = selected.map(slot => ({
+                datum: slot.dataset.tag,
+                stunde: slot.dataset.stunde
+            }));
+            fetch('/buchen', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    slots: slots,
+                    kurs: document.getElementById('kursFilter').value
+                })
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'ok') location.reload();
+            });
+        });
+        // Kurs-Info Popup
+        document.querySelectorAll('.kurs').forEach(function(kursDiv) {
+            kursDiv.style.pointerEvents = 'auto'; // Klickbar machen
+            kursDiv.parentElement.style.pointerEvents = 'auto'; // Zelle klickbar machen
+            kursDiv.addEventListener('click', function(e) {
+                e.stopPropagation();
+                document.getElementById('modalTitel').textContent = kursDiv.dataset.titel;
+                document.getElementById('modalBeschreibung').textContent = kursDiv.dataset.beschreibung;
+                document.getElementById('kursModal').style.display = 'block';
+            });
+        });
+        document.getElementById('closeModal').onclick = function() {
+            document.getElementById('kursModal').style.display = 'none';
+        };
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('kursModal')) {
+                document.getElementById('kursModal').style.display = 'none';
+            }
+        };
+    </script>
+    <form method="post" action="{{ url_for('logout') }}" style="position: fixed; right: 20px; bottom: 20px;">
+        <button type="submit">Logout</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrieren</title>
+</head>
+<body>
+    <h2>Registrieren</h2>
+    <form method="post">
+        Benutzername: <input type="text" name="username" required><br>
+        Passwort: <input type="password" name="password" required><br>
+        <button type="submit">Registrieren</button>
+    </form>
+    <p><a href="{{ url_for('login') }}">Zurück zum Login</a></p>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Kurs anlegen</title>
+</head>
+<body>
+    <h2>Kurs anlegen</h2>
+    <form method="post">
+        Kurstitel: <input type="text" name="titel" required><br>
+        Beschreibung: <input type="text" name="beschreibung"><br>
+        Von-Datum: <input type="date" name="von_datum" required><br>
+        Bis-Datum: <input type="date" name="bis_datum" required><br>
+        <button type="submit">Kurs anlegen</button>
+    </form>
+    <p><a href="{{ url_for('dashboard') }}">Zurück zum Dashboard</a></p>
+</body>
+</html>
