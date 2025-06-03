@@ -11,6 +11,8 @@
         Beschreibung: <input type="text" name="beschreibung"><br>
         Von-Datum: <input type="date" name="von_datum" required><br>
         Bis-Datum: <input type="date" name="bis_datum" required><br>
+        <label for="max_teilnehmer" style="text-align: center; width: 100%;">Maximale Teilnehmer pro Slot:</label>
+        <input type="number" id="max_teilnehmer" name="max_teilnehmer" min="1" max="99" required style="max-width: 120px; width: 100%; margin-bottom: 16px; text-align: center;">
         <button type="submit">Kurs anlegen</button>
     </form>
     <p><a href="{{ url_for('dashboard') }}">Zurück zum Dashboard</a></p>

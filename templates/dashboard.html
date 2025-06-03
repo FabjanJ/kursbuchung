@@ -167,7 +167,7 @@
                     {% endif %}
                 {% endif %}
                 {% set teilnehmer_count = 0 %}
-                {% if max_teilnehmer and kurs %}
+                {% if kurs and kurs.max_teilnehmer is not none %}
                     {% set benutzer_ids = [] %}
                     {% for b in buchungen %}
                         {% if b.datum.strftime('%Y-%m-%d') == tag and b.kurs_id == kurs.id %}
@@ -178,14 +178,16 @@
                     {% endfor %}
                     {% set teilnehmer_count = benutzer_ids|length %}
                 {% endif %}
-                {% set verfuegbar = max_teilnehmer - teilnehmer_count if max_teilnehmer else None %}
-                <td class="slot kurskopf{% if i >= 5 %} weekend{% endif %}{% if max_teilnehmer and verfuegbar == 0 %} ausgebucht{% endif %}" style="vertical-align:top; background:{% if max_teilnehmer and verfuegbar == 0 %}#f8d7da{% elif i >= 5 %}#f2f2f2{% else %}#fff{% endif %};">
+                {% if kurs and kurs.max_teilnehmer is not none %}
+                    {% set verfuegbar = kurs.max_teilnehmer * 9 - (buchungen|selectattr('datum','equalto',tag)|selectattr('kurs_id','equalto',kurs.id)|list|length) %}
+                {% else %}
+                    {% set verfuegbar = None %}
+                {% endif %}
+                <td class="slot kurskopf{% if i >= 5 %} weekend{% endif %}{% if kurs.max_teilnehmer and verfuegbar == 0 %} ausgebucht{% endif %}" style="vertical-align:top; background:{% if kurs.max_teilnehmer and verfuegbar == 0 %}#f8d7da{% elif i >= 5 %}#f2f2f2{% else %}#fff{% endif %};" data-tag="{{ tag }}">
                     {% if kurs_anzeige and i < 5 %}
-                        <div class="kurs{% if max_teilnehmer and verfuegbar == 0 %} ausgebucht{% endif %}" data-titel="{{ gewaehlter_kurs }}" data-beschreibung="{{ kurs.beschreibung|e }}" data-verfuegbar="{{ (verfuegbar if verfuegbar is not none and verfuegbar > 0 else 0) }}">
+                        <div class="kurs{% if kurs.max_teilnehmer and verfuegbar == 0 %} ausgebucht{% endif %}" data-titel="{{ gewaehlter_kurs }}" data-beschreibung="{{ kurs.beschreibung|e }}" data-verfuegbar="{{ verfuegbar if verfuegbar is not none else '-' }}">
                             <strong>{{ gewaehlter_kurs }}</strong><br>
-                            {% if max_teilnehmer %}
-                                <span style="font-size:0.8em;">{{ teilnehmer_count }}/{{ max_teilnehmer }} belegt</span>
-                            {% endif %}
+                            
                         </div>
                     {% endif %}
                 </td>
@@ -225,6 +227,7 @@
             <span class="close" id="closeModal">&times;</span>
             <h3 id="modalTitel"></h3>
             <p id="modalBeschreibung"></p>
+            <p id="modalPlaetze" style="font-weight:bold;"></p>
         </div>
     </div>
     <button id="buchenBtn">Buchen</button>
@@ -264,7 +267,15 @@
                     kurs: document.getElementById('kursFilter').value
                 })
             }).then(r => r.json()).then(data => {
-                if (data.status === 'ok') location.reload();
+                if (data.status === 'ok') {
+                    location.reload();
+                } else if (data.status === 'error' && data.errors) {
+                    // Zeige alle Fehler als Alert (oder schöner als Modal)
+                    let msg = data.errors.map(e => e.msg).filter((v, i, a) => a.indexOf(v) === i).join('\n');
+                    alert(msg);
+                } else if (data.status === 'error' && data.msg) {
+                    alert(data.msg);
+                }
             });
         });
         // Kurs-Info Popup
@@ -275,6 +286,13 @@
                 e.stopPropagation();
                 document.getElementById('modalTitel').textContent = kursDiv.dataset.titel;
                 document.getElementById('modalBeschreibung').textContent = kursDiv.dataset.beschreibung;
+                // Verfügbare Plätze berechnen
+                const tag = kursDiv.closest('td').getAttribute('data-tag');
+                fetch(`/verfuegbare_plaetze?kurs=${encodeURIComponent(kursDiv.dataset.titel)}&tag=${tag}`)
+                  .then(r => r.json())
+                  .then(data => {
+                    document.getElementById('modalPlaetze').textContent = 'Verfügbare Plätze: ' + data.verfuegbar;
+                  });
                 document.getElementById('kursModal').style.display = 'block';
             });
         });
