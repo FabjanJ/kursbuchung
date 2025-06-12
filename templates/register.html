@@ -3,14 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <title>Registrieren</title>
+    <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(to right, #141e30, #243b55);
+      color: #fff;
+    }
+
+    .form-box {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 40px 35px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-box h2 {
+      margin-bottom: 25px;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 16px 12px 42px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .input-group span {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      color: #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #007bff;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #0069d9;
+    }
+
+    .form-box a {
+      display: block;
+      margin-top: 18px;
+      font-size: 0.95rem;
+      color: #aad4ff;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .form-box a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
+  <div class="form-box">
     <h2>Registrieren</h2>
     <form method="post">
-        Benutzername: <input type="text" name="username" required><br>
-        Passwort: <input type="password" name="password" required><br>
-        <button type="submit">Registrieren</button>
+      <div class="input-group">
+        <span>👤</span>
+        <input type="text" name="username" placeholder="Benutzername" required>
+      </div>
+      <div class="input-group">
+        <span>🔒</span>
+        <input type="password" name="password" placeholder="Passwort" required>
+      </div>
+      <button type="submit">Registrieren</button>
     </form>
-    <p><a href="{{ url_for('login') }}">Zurück zum Login</a></p>
+    <a href="{{ url_for('login') }}">← Zurück zum Login</a>
+  </div>
 </body>
 </html>

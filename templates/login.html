@@ -3,14 +3,116 @@
 <head>
   <meta charset="UTF-8">
   <title>Login</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(to right, #141e30, #243b55);
+      color: #fff;
+    }
+
+    .login-box {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 40px 35px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    .login-box h2 {
+      margin-bottom: 25px;
+      font-weight: 600;
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 16px 12px 40px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .input-group span {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      color: #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #1e90ff;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #0077cc;
+    }
+
+    .login-box a {
+      display: block;
+      margin-top: 18px;
+      font-size: 0.95rem;
+      color: #aad4ff;
+      text-decoration: none;
+    }
+
+    .login-box a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-  <h2>Login</h2>
-  <form method="post">
-    Benutzername: <input type="text" name="username"><br>
-    Passwort: <input type="password" name="password"><br>
-    <button type="submit">Login</button>
-  </form>
-  <p><a href="{{ url_for('register') }}">Registrieren</a></p>
+  <div class="login-box">
+    <h2>Login</h2>
+    <form method="post">
+      <div class="input-group">
+        <span>👤</span>
+        <input type="text" name="username" placeholder="Benutzername" required>
+      </div>
+      <div class="input-group">
+        <span>🔒</span>
+        <input type="password" name="password" placeholder="Passwort" required>
+      </div>
+      <button type="submit">Einloggen</button>
+    </form>
+    <a href="{{ url_for('register') }}">Noch kein Konto? Registrieren</a>
+  </div>
 </body>
 </html>

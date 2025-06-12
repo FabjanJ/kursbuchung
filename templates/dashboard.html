@@ -4,49 +4,110 @@
     <meta charset="UTF-8">
     <title>Dashboard</title>
     <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+            color: #fff;
+            user-select: none;
+        }
+
+        body, * {
+            user-select: none;
+        }
+
         table {
             border-collapse: collapse;
             width: 100%;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
 
         th, td {
-            border: 1px solid #ccc;
+            border: 1px solid rgba(255, 255, 255, 0.15);
             padding: 10px;
             text-align: center;
             min-width: 100px;
             vertical-align: top;
+            transition: background-color 0.2s ease;
+            color: #fff;
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+        }
+
+        td.slot {
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.05);
         }
 
         td.slot:hover {
-            cursor: pointer;
-            background-color: #e6e6e6;
+            background-color: rgba(255, 255, 255, 0.15);
         }
 
         td.slot.selected {
-            background-color: #cccccc;
+            background-color: rgba(51, 153, 255, 0.4);
+            border: 2px solid #3399ff;
+        }
+
+        td.slot.belegt {
+            background-color: rgba(255, 0, 0, 0.3);
+            color: #ffb3b3;
+            pointer-events: none;
+        }
+
+        td.slot.eigen {
+            background-color: rgba(40, 167, 69, 0.3);
+            border: 2px solid #28a745;
+        }
+
+        td.kurskopf {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        th.weekend, td.weekend {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            color: #ccc !important;
+            pointer-events: none !important;
+            cursor: default !important;
+            user-select: none !important;
         }
 
         .kurs {
-            background-color: #dff0d8;
+            background-color: rgba(40, 167, 69, 0.3);
             border: 1px solid #a1d99b;
-            padding: 3px;
-            margin-top: 5px;
+            padding: 6px;
+            margin-top: 6px;
             font-size: 0.9em;
             border-radius: 4px;
-            color: #222;
+            color: #fff;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            outline: none;
         }
+
         .kurs.ausgebucht {
-            background-color: #f8d7da !important;
-            border: 2px solid #c00 !important;
-            color: #c00 !important;
+            background-color: rgba(255, 0, 0, 0.3) !important;
+            border: 2px solid #ff4d4d !important;
+            color: #ffb3b3 !important;
         }
 
         a {
             margin: 10px;
+            text-decoration: none;
+            color: #cce4ff;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
 
         .filter {
@@ -56,40 +117,34 @@
 
         .filter select {
             padding: 5px;
+            background-color: #1e3c72;
+            color: #fff;
+            border: 1px solid #3399ff;
+            border-radius: 4px;
         }
 
-        .belegt {
-            background-color: #f8d7da; /* rot für belegt */
-            pointer-events: none;
+        .filter option {
+            color: #fff;
+            background: #1e3c72;
         }
 
-        .kurskopf {
-            background: #fff !important;
-            pointer-events: none;
-            cursor: default;
-        }
-
-        .weekend {
-            background: #f2f2f2 !important;
-            pointer-events: none;
-            cursor: default;
-        }
-
-        /* Neu hinzugefügt für Logout-Button */
-        #logoutBtn {
+        #logoutBtn,
+        form[action*="logout"] button {
             position: fixed;
             right: 20px;
             bottom: 20px;
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: rgba(0, 123, 255, 0.8);
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-weight: bold;
         }
 
-        #logoutBtn:hover {
-            background-color: #0056b3;
+        #logoutBtn:hover,
+        form[action*="logout"] button:hover {
+            background-color: rgba(0, 86, 179, 0.9);
         }
 
         .modal {
@@ -101,47 +156,109 @@
             width: 100vw;
             height: 100vh;
             overflow: auto;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.5);
         }
+
         .modal-content {
-            background: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             margin: 10% auto;
             padding: 20px;
-            border: 1px solid #888;
+            border: 1px solid rgba(255,255,255,0.2);
             width: 350px;
             border-radius: 8px;
             text-align: left;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
         }
+
         .close {
-            color: #aaa;
+            color: #fff;
             float: right;
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
         }
+
+        .close:hover {
+            color: #ccc;
+        }
+
+        button#buchenBtn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: rgba(40, 167, 69, 0.7);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button#buchenBtn:hover {
+            background-color: rgba(33, 136, 56, 0.8);
+        }
+
+        h2, h3 {
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+
+        ul li {
+            margin-bottom: 5px;
+        }
+
+        .user-greeting-small {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 1em;
+            font-weight: 500;
+            background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+            color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.18); /* wie Kalender-Box */
+            padding: 7px 16px;
+            letter-spacing: 0.2px;
+            max-width: 260px;
+        }
+
+        .user-greeting-small span {
+            font-size: 1.1em;
+        }
+
+        .user-greeting-small strong {
+            color: #aad4ff;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
     </style>
 </head>
 <body>
-    <div style="text-align:center; font-size:1.2em; margin-bottom:10px;">
-        Hallo {{ session['username'] }}
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+        <div class="user-greeting-small">
+            <span>👋</span> Hallo <strong>{{ session['username'] }}</strong>
+        </div>
+        <h2 style="margin: 0; font-size: 1.25em;">Wochenansicht</h2>
+        <div class="filter" style="float: none; margin: 0;">
+            <form method="get" id="kursForm" style="margin: 0;">
+                <label for="kursFilter">Kurs wählen:</label>
+                <select id="kursFilter" name="kurs" onchange="document.getElementById('kursForm').submit()">
+                    {% for titel in kurstitel %}
+                        <option value="{{ titel }}" {% if titel == gewaehlter_kurs %}selected{% endif %}>{{ titel }}</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="woche" value="{{ delta }}">
+            </form>
+        </div>
     </div>
-    <h2 style="display: inline-block;">Wochenansicht</h2>
-    <div class="filter">
-        <form method="get" id="kursForm">
-            <label for="kursFilter">Kurs wählen:</label>
-            <select id="kursFilter" name="kurs" onchange="document.getElementById('kursForm').submit()">
-                {% for titel in kurstitel %}
-                    <option value="{{ titel }}" {% if titel == gewaehlter_kurs %}selected{% endif %}>{{ titel }}</option>
-                {% endfor %}
-            </select>
-            <input type="hidden" name="woche" value="{{ delta }}">
-        </form>
-    </div>
-    <div style="clear: both;"></div>
-
     <div>
-        <a href="{{ url_for('dashboard', woche=delta - 1) }}">← Vorige Woche</a> |
-        <a href="{{ url_for('dashboard', woche=delta + 1) }}">Nächste Woche →</a>
+        <a href="{{ url_for('dashboard', woche=delta - 1, kurs=gewaehlter_kurs) }}">← Vorige Woche</a> |
+        <a href="{{ url_for('dashboard', woche=delta + 1, kurs=gewaehlter_kurs) }}">Nächste Woche →</a>
     </div>
 
     <br>
@@ -167,7 +284,7 @@
                     {% endif %}
                 {% endif %}
                 {% set teilnehmer_count = 0 %}
-                {% if kurs and kurs.max_teilnehmer is not none %}
+                {% if max_teilnehmer and kurs %}
                     {% set benutzer_ids = [] %}
                     {% for b in buchungen %}
                         {% if b.datum.strftime('%Y-%m-%d') == tag and b.kurs_id == kurs.id %}
@@ -178,16 +295,14 @@
                     {% endfor %}
                     {% set teilnehmer_count = benutzer_ids|length %}
                 {% endif %}
-                {% if kurs and kurs.max_teilnehmer is not none %}
-                    {% set verfuegbar = kurs.max_teilnehmer * 9 - (buchungen|selectattr('datum','equalto',tag)|selectattr('kurs_id','equalto',kurs.id)|list|length) %}
-                {% else %}
-                    {% set verfuegbar = None %}
-                {% endif %}
-                <td class="slot kurskopf{% if i >= 5 %} weekend{% endif %}{% if kurs.max_teilnehmer and verfuegbar == 0 %} ausgebucht{% endif %}" style="vertical-align:top; background:{% if kurs.max_teilnehmer and verfuegbar == 0 %}#f8d7da{% elif i >= 5 %}#f2f2f2{% else %}#fff{% endif %};" data-tag="{{ tag }}">
+                {% set verfuegbar = max_teilnehmer - teilnehmer_count if max_teilnehmer else None %}
+                <td class="slot kurskopf{% if i >= 5 %} weekend{% endif %}{% if max_teilnehmer and verfuegbar == 0 %} ausgebucht{% endif %}" style="vertical-align:top; background:{% if max_teilnehmer and verfuegbar == 0 %}#f8d7da{% elif i >= 5 %}#f2f2f2{% else %}#fff{% endif %};">
                     {% if kurs_anzeige and i < 5 %}
-                        <div class="kurs{% if kurs.max_teilnehmer and verfuegbar == 0 %} ausgebucht{% endif %}" data-titel="{{ gewaehlter_kurs }}" data-beschreibung="{{ kurs.beschreibung|e }}" data-verfuegbar="{{ verfuegbar if verfuegbar is not none else '-' }}">
-                            <strong>{{ gewaehlter_kurs }}</strong><br>
-                            
+                        <div class="kurs{% if max_teilnehmer and verfuegbar == 0 %} ausgebucht{% endif %}" data-titel="{{ gewaehlter_kurs }}" data-beschreibung="{{ kurs.beschreibung|e }}" data-verfuegbar="{{ (verfuegbar if verfuegbar is not none and verfuegbar > 0 else 0) }}" style="text-align:center;">
+                            <strong style="display:block; width:100%; text-align:center;">{{ gewaehlter_kurs }}</strong>
+                            {% if max_teilnehmer and teilnehmer_count > 0 %}
+                                <span style="font-size:0.8em; display:block; margin-top:2px;">{{ teilnehmer_count }}/{{ max_teilnehmer }} belegt</span>
+                            {% endif %}
                         </div>
                     {% endif %}
                 </td>
@@ -227,7 +342,7 @@
             <span class="close" id="closeModal">&times;</span>
             <h3 id="modalTitel"></h3>
             <p id="modalBeschreibung"></p>
-            <p id="modalPlaetze" style="font-weight:bold;"></p>
+            <div id="modalPlaetze" style="margin-top:10px;font-size:1em;"></div>
         </div>
     </div>
     <button id="buchenBtn">Buchen</button>
@@ -239,6 +354,9 @@
             <li>Keine Buchungen</li>
         {% endfor %}
     </ul>
+    <form method="post" action="{{ url_for('logout') }}" style="position: fixed; right: 20px; bottom: 20px; z-index: 2000;">
+        <button type="submit">Logout</button>
+    </form>
     <script>
         // Slot auswählbar machen
         document.querySelectorAll('.slot').forEach(slot => {
@@ -251,11 +369,55 @@
                 slot.style.pointerEvents = 'none';
             }
         });
-        // Buchen Button
-        document.getElementById('buchenBtn').addEventListener('click', function () {
-            const selected = Array.from(document.querySelectorAll('.slot.selected'));
-            if (selected.length === 0) return alert('Bitte mindestens einen Slot auswählen!');
-            const slots = selected.map(slot => ({
+        // Kurs-Info Popup
+        document.querySelectorAll('.kurs').forEach(function(kursDiv) {
+            kursDiv.style.pointerEvents = 'auto'; // Klickbar machen
+            kursDiv.parentElement.style.pointerEvents = 'auto'; // Zelle klickbar machen
+            kursDiv.addEventListener('click', function(e) {
+                e.stopPropagation();
+                document.getElementById('modalTitel').textContent = kursDiv.dataset.titel;
+                document.getElementById('modalBeschreibung').textContent = kursDiv.dataset.beschreibung;
+                // Verfügbare Plätze per AJAX laden
+                const kurs = kursDiv.dataset.titel;
+                // Tag aus data-tag Attribut der darunterliegenden Slot-Zelle
+                let tag = null;
+                let cell = kursDiv.parentElement;
+                let colIdx = cell.cellIndex;
+                // Die erste Buchungszeile (erste Zeile mit Slots) im tbody ist die zweite Zeile insgesamt (tr:nth-child(2))
+                let slotRow = cell.parentElement.parentElement.rows[1];
+                if (slotRow && slotRow.cells[colIdx] && slotRow.cells[colIdx].dataset.tag) {
+                    tag = slotRow.cells[colIdx].dataset.tag;
+                }
+                if (kurs && tag) {
+                    fetch(`/verfuegbare_plaetze?kurs=${encodeURIComponent(kurs)}&tag=${encodeURIComponent(tag)}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            document.getElementById('modalPlaetze').textContent = `Verfügbare Plätze an diesem Tag: ${data.verfuegbar}`;
+                        });
+                } else {
+                    document.getElementById('modalPlaetze').textContent = '';
+                }
+                document.getElementById('kursModal').style.display = 'block';
+            });
+        });
+        // Schließen der Modals
+        document.getElementById('closeModal').addEventListener('click', function() {
+            document.getElementById('kursModal').style.display = 'none';
+        });
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('kursModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        });
+        // Buchungs-Button Logik
+        document.getElementById('buchenBtn').addEventListener('click', function() {
+            const ausgewaehlteSlots = Array.from(document.querySelectorAll('.slot.selected'));
+            if (ausgewaehlteSlots.length === 0) {
+                alert('Bitte mindestens einen Slot auswählen!');
+                return;
+            }
+            const slots = ausgewaehlteSlots.map(slot => ({
                 datum: slot.dataset.tag,
                 stunde: slot.dataset.stunde
             }));
@@ -268,45 +430,30 @@
                 })
             }).then(r => r.json()).then(data => {
                 if (data.status === 'ok') {
+                    // Nach erfolgreicher Buchung Modal aktualisieren, falls offen
+                    if (document.getElementById('kursModal').style.display === 'block') {
+                        // Modal neu laden (erneut Klick auslösen)
+                        const kursDiv = document.querySelector('.kurs[data-titel="' + document.getElementById('kursFilter').value + '"]');
+                        if (kursDiv) kursDiv.click();
+                    }
                     location.reload();
-                } else if (data.status === 'error' && data.errors) {
-                    // Zeige alle Fehler als Alert (oder schöner als Modal)
-                    let msg = data.errors.map(e => e.msg).filter((v, i, a) => a.indexOf(v) === i).join('\n');
-                    alert(msg);
-                } else if (data.status === 'error' && data.msg) {
-                    alert(data.msg);
+                } else if (data.status === 'error') {
+                    if (data.errors && data.errors.length > 0) {
+                        let msg = data.errors.map(e => {
+                            if (e.msg.includes('maximale Teilnehmerzahl')) return 'Slot voll: ' + e.datum + ' ' + e.stunde + ':00';
+                            if (e.msg.includes('schon gebucht')) return 'Du darfst leider nicht doppelt Buchen: ' + e.datum + ' ' + e.stunde + ':00';
+                            return e.msg;
+                        }).join('\n');
+                        alert(msg);
+                    } else {
+                        alert('Buchung fehlgeschlagen.');
+                    }
                 }
             });
         });
-        // Kurs-Info Popup
-        document.querySelectorAll('.kurs').forEach(function(kursDiv) {
-            kursDiv.style.pointerEvents = 'auto'; // Klickbar machen
-            kursDiv.parentElement.style.pointerEvents = 'auto'; // Zelle klickbar machen
-            kursDiv.addEventListener('click', function(e) {
-                e.stopPropagation();
-                document.getElementById('modalTitel').textContent = kursDiv.dataset.titel;
-                document.getElementById('modalBeschreibung').textContent = kursDiv.dataset.beschreibung;
-                // Verfügbare Plätze berechnen
-                const tag = kursDiv.closest('td').getAttribute('data-tag');
-                fetch(`/verfuegbare_plaetze?kurs=${encodeURIComponent(kursDiv.dataset.titel)}&tag=${tag}`)
-                  .then(r => r.json())
-                  .then(data => {
-                    document.getElementById('modalPlaetze').textContent = 'Verfügbare Plätze: ' + data.verfuegbar;
-                  });
-                document.getElementById('kursModal').style.display = 'block';
-            });
-        });
-        document.getElementById('closeModal').onclick = function() {
-            document.getElementById('kursModal').style.display = 'none';
-        };
-        window.onclick = function(event) {
-            if (event.target == document.getElementById('kursModal')) {
-                document.getElementById('kursModal').style.display = 'none';
-            }
-        };
+        // Entferne ggf. die alte große Begrüßung
+        var oldGreeting = document.querySelector('.user-greeting');
+        if (oldGreeting) oldGreeting.remove();
     </script>
-    <form method="post" action="{{ url_for('logout') }}" style="position: fixed; right: 20px; bottom: 20px;">
-        <button type="submit">Logout</button>
-    </form>
 </body>
 </html>

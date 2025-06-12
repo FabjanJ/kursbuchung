@@ -101,9 +101,14 @@ def dashboard():
     else:
         buchungen = []
         eigene_buchungen = []
+    # max_teilnehmer wird an das Template übergeben, damit die Anzeige und Logik im Template korrekt funktioniert
+    if kurs_id:
+        max_teilnehmer = kurs['max_teilnehmer'] if kurs and 'max_teilnehmer' in kurs else None
+    else:
+        max_teilnehmer = None
     # Dashboard-Template rendern (Rückgabe der View)
     return render_template('dashboard.html', start=start_montag.date(), delta=delta, timedelta=timedelta, 
-                           kurstitel=kurstitel, gewaehlter_kurs=gewaehlter_kurs, buchungen=buchungen, eigene_buchungen=eigene_buchungen, kurs=kurs)
+                           kurstitel=kurstitel, gewaehlter_kurs=gewaehlter_kurs, buchungen=buchungen, eigene_buchungen=eigene_buchungen, kurs=kurs, max_teilnehmer=max_teilnehmer)
 
 @app.route('/buchen', methods=['POST']) # Definiert die Route '/buchen' für POST-Anfragen
 def buchen():
@@ -171,13 +176,12 @@ def verfuegbare_plaetze():
         return {'verfuegbar': 0}  # Wenn kein Kurs gefunden, 0 zurückgeben
     kurs_id = kurs['id']  # Kurs-ID speichern
     max_teilnehmer = kurs['max_teilnehmer']  # Maximale Teilnehmerzahl speichern
-    gesamt_slots = 0  # Zähler für alle möglichen Buchungen an diesem Tag
-    gebucht = 0  # Zähler für bereits gebuchte Plätze an diesem Tag
-    for stunde in range(8, 17):  # Für jede Stunde von 8 bis 16 Uhr
-        gesamt_slots += max_teilnehmer  # Pro Slot max_teilnehmer addieren
-        cursor.execute('SELECT COUNT(*) as cnt FROM buchungen WHERE kurs_id = %s AND datum = %s AND stunde = %s', (kurs_id, tag, stunde))  # Buchungen für diesen Slot zählen
-        gebucht += cursor.fetchone()['cnt']  # Gebuchte Plätze aufsummieren
+    gesamt_slots = max_teilnehmer * 9  # 9 Slots pro Tag
+    cursor.execute('SELECT COUNT(*) as cnt FROM buchungen WHERE kurs_id = %s AND datum = %s', (kurs_id, tag))
+    gebucht = cursor.fetchone()['cnt']
     verfuegbar = gesamt_slots - gebucht  # Verfügbare Plätze berechnen
+    if verfuegbar < 0:
+        verfuegbar = 0
     return {'verfuegbar': verfuegbar}  # Ergebnis als JSON zurückgeben
 
 if __name__ == '__main__': # Startet die App nur, wenn das Skript direkt ausgeführt wird

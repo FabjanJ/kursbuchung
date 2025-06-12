@@ -3,18 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <title>Kurs anlegen</title>
+    <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(to right, #141e30, #243b55);
+      color: #fff;
+    }
+
+    .form-box {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 40px 35px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-box h2 {
+      margin-bottom: 25px;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 16px 12px 42px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .input-group span {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      color: #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #28a745;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+
+    .form-box a {
+      display: block;
+      margin-top: 18px;
+      font-size: 0.95rem;
+      color: #aad4ff;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .form-box a:hover {
+      text-decoration: underline;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+  </style>
 </head>
 <body>
+  <div class="form-box">
     <h2>Kurs anlegen</h2>
     <form method="post">
-        Kurstitel: <input type="text" name="titel" required><br>
-        Beschreibung: <input type="text" name="beschreibung"><br>
-        Von-Datum: <input type="date" name="von_datum" required><br>
-        Bis-Datum: <input type="date" name="bis_datum" required><br>
-        <label for="max_teilnehmer" style="text-align: center; width: 100%;">Maximale Teilnehmer pro Slot:</label>
-        <input type="number" id="max_teilnehmer" name="max_teilnehmer" min="1" max="99" required style="max-width: 120px; width: 100%; margin-bottom: 16px; text-align: center;">
-        <button type="submit">Kurs anlegen</button>
+      <div class="input-group">
+        <span>📚</span>
+        <input type="text" name="titel" placeholder="Kurstitel" required>
+      </div>
+      <div class="input-group">
+        <span>📝</span>
+        <input type="text" name="beschreibung" placeholder="Beschreibung">
+      </div>
+      <div class="input-group">
+        <span>📅</span>
+        <input type="date" name="von_datum" required>
+      </div>
+      <div class="input-group">
+        <span>📅</span>
+        <input type="date" name="bis_datum" required>
+      </div>
+      <div class="input-group">
+        <span>👥</span>
+        <input type="number" name="max_teilnehmer" placeholder="Max. Teilnehmer pro Slot" min="1" required>
+      </div>
+      <button type="submit">Kurs anlegen</button>
     </form>
-    <p><a href="{{ url_for('dashboard') }}">Zurück zum Dashboard</a></p>
+    <a href="{{ url_for('dashboard') }}">← Zurück zum Dashboard</a>
+  </div>
 </body>
 </html>
